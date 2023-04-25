@@ -13,7 +13,8 @@ const getUserById = (req, res) => {
     const id = parseInt(req.params.id, 10)
     database
     .query("select * from users where id = ?", [id])
-    .then(([user]) => res.json(user))
+    .then(([user]) => {
+        user ? res.json(user): res.status(404).send("Not Found");})
     .catch((err) => {
         console.error(err);
         res.status(500).send("Error while retrieving user ?", [id] )
