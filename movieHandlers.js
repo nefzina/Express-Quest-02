@@ -22,7 +22,25 @@ const getMovieById = (req, res) => {
         console.error(err)});
   }
 
+const postMovie = (req, res) => {
+  const {title, director, year, color, duration} = req.body;
+  
+  database
+  .query("INSERT INTO movies(title, director, year, color, duration) VALUES (?, ?, ?, ?, ?)", [title, director, year, color, duration])
+  .then(([result]) => res.location(`/api/movies/${result.insertId}`).status(201).send("movie successfully added"))
+  .catch(err => res.status(500).send("error to add the movie"))
+}
+
+const deleteMovie = (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  database.query("DELETE FROM movies WHERE id = ?", [id])
+  .then(([result]) => {res.status(200).send("Movie deleted successfully"); console.log(result);})
+  .catch(err => res.status(500).send("error while deleting the movie"))
+}
+
 module.exports = {
   getMovies,
   getMovieById,
+  postMovie,
+  deleteMovie
 };
