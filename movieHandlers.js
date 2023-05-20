@@ -1,19 +1,37 @@
 const database = require("./database");
 
 const getMovies = (req, res) => {
-  const sqlValue = [];
-  
-  let sql = "SELECT * FROM movies";
-  if(sqlValue != null) {
-    sql += " WHERE color = ?";
-    sqlValue.push(req.query.color);
+  const initialSql = "select * from movies";
+  const where = [];
+
+  if (req.query.color != null) {
+    where.push({
+      column: "color",
+      value: req.query.color,
+      operator: "=",
+    });
   }
+  if (req.query.max_duration != null) {
+    where.push({
+      column: "duration",
+      value: req.query.max_duration,
+      operator: "<=",
+    });
+  }
+
   database
-    .query(sql, sqlValue)
+    .query(
+      where.reduce(
+        (sql, { column, operator }, index) =>
+          `${sql} ${index === 0 ? "where" : "and"} ${column} ${operator} ?`,
+        initialSql
+      ),
+      where.map(({ value }) => value)
+    )
     .then(([movies]) => res.json(movies))
     .catch((err) => {
       console.error(err);
-      res.status(500).send("Error retrieving data from database");
+      res.status(500).send("Error: operation cancelled");
     });
 };
 
@@ -27,7 +45,7 @@ const getMovieById = (req, res) => {
       else res.status(404).send("Not Found");
     })
     .catch((err) => {
-      res.status(500).send("Error retrieving data from database");
+      res.status(500).send("Error: operation cancelled");
       console.error(err);
     });
 };
@@ -46,7 +64,7 @@ const postMovie = (req, res) => {
         .status(201)
         .send("movie successfully added")
     )
-    .catch((err) => res.status(500).send("error to add the movie"));
+    .catch((err) => res.status(500).send("Error: operation cancelled"));
 };
 
 const putMovie = (req, res) => {
@@ -58,8 +76,9 @@ const putMovie = (req, res) => {
       [title, director, year, color, duration, id]
     )
     .then(([result]) => {
-      if (result.affectedRows === 1) {res.status(204);}
-      else res.status(404).send("NOT FOUND");
+      if (result.affectedRows === 1) {
+        res.status(204);
+      } else res.status(404).send("NOT FOUND");
     })
     .catch((err) => res.status(500).send("Error: Modification cancelled"));
 };
