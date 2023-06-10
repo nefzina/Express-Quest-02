@@ -1,7 +1,7 @@
 const database = require("./database");
 
 const getUsers = (req, res) => {
-  const initialSql = "select * from users";
+  const initialSql = "select id, firstname, lastname, email, city, language from users";
   const where = [];
   const params = req.query;
 
@@ -31,7 +31,7 @@ const getUsers = (req, res) => {
 const getUserById = (req, res) => {
   const id = parseInt(req.params.id, 10);
   database
-    .query("select * from users where id = ?", [id])
+    .query("select id, firstname, lastname, email, city, language from users where id = ?", [id])
     .then(([user]) => {
       user != null ? res.json(user[0]) : res.status(404).send("Not Found");
     })
@@ -42,11 +42,11 @@ const getUserById = (req, res) => {
 };
 
 const postUser = (req, res) => {
-  const { firstname, lastname, email, city, language } = req.body;
+  const { firstname, lastname, email, city, language, hashedPassword } = req.body;
   database
     .query(
-      "INSERT INTO users(firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)",
-      [firstname, lastname, email, city, language]
+      "INSERT INTO users(firstname, lastname, email, city, language, hashedPassword) VALUES (?, ?, ?, ?, ?, ?)",
+      [firstname, lastname, email, city, language, hashedPassword]
     )
     .then(([result]) =>
       res
