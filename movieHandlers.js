@@ -64,7 +64,7 @@ const postMovie = (req, res) => {
         .status(201)
         .send("movie successfully added")
     )
-    .catch((err) => res.status(500).send("Error: operation cancelled"));
+    .catch((err) => res.status(500).send(err));
 };
 
 const putMovie = (req, res) => {
