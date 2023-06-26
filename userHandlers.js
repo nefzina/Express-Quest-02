@@ -1,7 +1,8 @@
 const database = require("./database");
 
 const getUsers = (req, res) => {
-  const initialSql = "select id, firstname, lastname, email, city, language from users";
+  const initialSql =
+    "select id, firstname, lastname, email, city, language from users";
   const where = [];
   const params = req.query;
 
@@ -31,7 +32,10 @@ const getUsers = (req, res) => {
 const getUserById = (req, res) => {
   const id = parseInt(req.params.id, 10);
   database
-    .query("select id, firstname, lastname, email, city, language from users where id = ?", [id])
+    .query(
+      "select id, firstname, lastname, email, city, language from users where id = ?",
+      [id]
+    )
     .then(([user]) => {
       user != null ? res.json(user[0]) : res.status(404).send("Not Found");
     })
@@ -41,8 +45,21 @@ const getUserById = (req, res) => {
     });
 };
 
+const getUserByEmailWithPasswordAndPassToNext = (req, res, next) => {
+  
+  database
+    .query("SELECT * FROM users WHERE email = ?", [req.body.email])
+    .then(([result]) => {
+      result[0] != null
+        ? (req.user = result[0], next())
+        : res.status(404).send("email or password not correct");
+    })
+    .catch((err) => res.sendStatus(401));
+};
+
 const postUser = (req, res) => {
-  const { firstname, lastname, email, city, language, hashedPassword } = req.body;
+  const { firstname, lastname, email, city, language, hashedPassword } =
+    req.body;
   database
     .query(
       "INSERT INTO users(firstname, lastname, email, city, language, hashedPassword) VALUES (?, ?, ?, ?, ?, ?)",
@@ -59,7 +76,8 @@ const postUser = (req, res) => {
 
 const putUser = (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const { firstname, lastname, email, city, language, hashedPassword } = req.body;
+  const { firstname, lastname, email, city, language, hashedPassword } =
+    req.body;
 
   database
     .query(
@@ -80,7 +98,8 @@ const deleteUser = (req, res) => {
   database
     .query("DELETE from users WHERE id = ?", [id])
     .then(([result]) => {
-      if (result.affectedRows === 1) res.status(200).send("deleted successfully");
+      if (result.affectedRows === 1)
+        res.status(200).send("deleted successfully");
       else res.status(400).send("NOT FOUND");
     })
     .catch((err) => res.status(500).send("Delete failed"));
@@ -89,6 +108,7 @@ const deleteUser = (req, res) => {
 module.exports = {
   getUsers,
   getUserById,
+  getUserByEmailWithPasswordAndPassToNext,
   postUser,
   putUser,
   deleteUser,
